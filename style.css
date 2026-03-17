@@ -1,0 +1,195 @@
+/* =========================
+   GLOBAL
+   ========================= */
+body {
+    font-family: Arial, sans-serif;
+    padding: 20px;
+    margin: 0;
+    background-color: #f5f5f5;
+    color: #333;
+}
+
+header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 20px;
+}
+
+header h1 {
+    margin: 0;
+    font-size: 2em;
+}
+
+/* =========================
+   BUTTONS
+   ========================= */
+button {
+    padding: 6px 12px;
+    border-radius: 6px;
+    border: none;
+    background-color: #2196f3;
+    color: #fff;
+    cursor: pointer;
+    font-weight: bold;
+    transition: background 0.2s;
+}
+
+button:hover:not(:disabled) {
+    background-color: #1976d2;
+}
+
+button:disabled {
+    background-color: #90caf9;
+    cursor: not-allowed;
+}
+
+/* =========================
+   INPUTS
+   ========================= */
+input {
+    padding: 6px 8px;
+    border-radius: 6px;
+    border: 1px solid #ccc;
+    transition: border 0.2s;
+}
+
+input:focus {
+    border-color: #2196f3;
+    outline: none;
+}
+
+/* =========================
+   ADD ITEM SECTION
+   ========================= */
+.add-item {
+    display: flex;
+    gap: 10px;
+    margin-bottom: 15px;
+    flex-wrap: wrap;
+}
+
+.add-item input {
+    flex: 1;
+    min-width: 150px;
+}
+
+/* =========================
+   SEARCH BAR
+   ========================= */
+.search-bar {
+    margin-bottom: 15px;
+}
+
+.search-bar input {
+    width: 100%;
+}
+
+/* =========================
+   TODO ITEMS
+   ========================= */
+.todo-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 10px 15px;
+    margin-bottom: 10px;
+    border-radius: 8px;
+    background-color: #fff;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+    transition: background-color 0.2s, transform 0.1s;
+}
+
+.todo-item:hover {
+    transform: translateY(-2px);
+}
+
+.todo-item.dragging {
+    opacity: 0.5;
+}
+
+/* LEFT SIDE: text + badge + category */
+.item-left {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    flex-wrap: wrap;
+}
+
+.item-left p {
+    margin: 0;
+    font-weight: 500;
+}
+
+.badge {
+    padding: 2px 6px;
+    border-radius: 4px;
+    font-size: 0.75em;
+    font-weight: bold;
+    color: #fff;
+}
+
+.item-category {
+    font-size: 0.8em;
+    color: gray;
+}
+
+/* RIGHT SIDE: buttons */
+.item-buttons {
+    display: flex;
+    gap: 5px;
+    flex-shrink: 0;
+}
+
+.item-buttons button {
+    padding: 4px 8px;
+    border-radius: 6px;
+    border: none;
+    background-color: #2196f3;
+    color: #fff;
+    cursor: pointer;
+    font-size: 0.85em;
+    transition: background-color 0.2s;
+}
+
+.item-buttons button:hover {
+    background-color: #1976d2;
+}
+
+/* =========================
+   FILTERS
+   ========================= */
+.filters {
+    margin-top: 20px;
+}
+
+.filters button {
+    margin-right: 5px;
+}
+
+/* =========================
+   DARK MODE
+   ========================= */
+body.dark {
+    background-color: #121212;
+    color: #fff;
+}
+
+body.dark .todo-item {
+    background-color: #1e1e1e;
+    box-shadow: 0 2px 5px rgba(255,255,255,0.05);
+}
+
+body.dark .item-buttons button {
+    background-color: #333;
+}
+
+body.dark .item-buttons button:hover {
+    background-color: #555;
+}
+
+body.dark input {
+    background-color: #222;
+    color: #fff;
+    border: 1px solid #555;
+}
