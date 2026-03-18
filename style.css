@@ -1,14 +1,18 @@
 /* =========================
    GLOBAL
    ========================= */
-body {
+.todo-app-container {
     font-family: 'Gill Sans', 'Gill Sans MT', Calibri, 'Trebuchet MS', sans-serif;
+    width: 90%;
+    max-width: 900px;
+    margin: 0 auto;
     padding: 20px;
-    margin: 0;
-    background-color: #f0f0f0; /* helles, angenehmes Grau */
-    color: #222; /* stärkerer Kontrast für Text */
+    background-color: #fdfdfd;  /* sanftes Weiß */
+    border: 1px solid #dcdcdc;  /* dezenter Rahmen */
+    border-radius: 10px;
 }
 
+/* HEADER */
 header {
     display: flex;
     justify-content: space-between;
@@ -18,17 +22,22 @@ header {
 
 header h1 {
     margin: 0;
-    font-size: 2em; /* größere Schrift */
+    font-size: 2em;
+    color: #3d6c58;          /* dunkleres Pastellgrün für besseren Kontrast */
+    font-weight: 700;         /* etwas fetter für Präsenz */
+    letter-spacing: 0.5px;    /* leichte Luft zwischen den Buchstaben */
 }
-
-/* =========================
-   BUTTONS
-   ========================= */
+h1 .highlight {
+    color: #0b8d71; /* dunkleres Grün für Kontrast */
+    font-weight: 700;
+    font-style: italic; /* optional, für Stil */
+}
+/* BUTTONS */
 button {
-    padding: 8px 14px; /* größere klickbare Fläche */
+    padding: 8px 14px;
     border-radius: 6px;
     border: none;
-    background-color: #007acc; /* kontrastreicher Blau-Ton */
+    background-color: #5ca08b; /* dunkleres Pastellgrün */
     color: #fff;
     cursor: pointer;
     font-weight: 600;
@@ -37,33 +46,30 @@ button {
 }
 
 button:hover:not(:disabled) {
-    background-color: #005fa3; /* dunkleres Blau */
+    background-color: #47816d; /* dunkler beim Hover */
 }
 
 button:disabled {
-    background-color: #90caf9;
+    background-color: #a8cfc1;
     cursor: not-allowed;
 }
 
-/* =========================
-   INPUTS
-   ========================= */
+/* INPUTS */
 input {
     padding: 8px 10px;
     border-radius: 6px;
-    border: 1px solid #aaa;
+    border: 1px solid #ccc;
     font-size: 0.95em;
     transition: border 0.2s;
+    background-color: #fefefe;
 }
 
 input:focus {
-    border-color: #007acc;
+    border-color: #5ca08b;
     outline: none;
 }
 
-/* =========================
-   ADD ITEM SECTION
-   ========================= */
+/* ADD ITEM */
 .add-item {
     display: flex;
     gap: 12px;
@@ -76,69 +82,58 @@ input:focus {
     min-width: 180px;
 }
 
-/* =========================
-   SEARCH BAR
-   ========================= */
+/* SEARCH BAR */
 .search-bar {
     margin-bottom: 20px;
 }
 
 .search-bar input {
     width: 100%;
-    font-size: 0.95em;
 }
 
-/* =========================
-   TODO ITEMS
-   ========================= */
+/* TODO ITEMS */
 .todo-item {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    padding: 15px 20px; /* größere Karten */
-    margin-bottom: 15px;
-    border-radius: 10px;
-    background-color: #ffffff;
-    box-shadow: 0 4px 8px rgba(0,0,0,0.1);
-    transition: background-color 0.2s, transform 0.1s;
+    padding: 12px 15px;
+    margin-bottom: 12px;
+    border-radius: 8px;
+    background-color: #eaf4f4; /* Pastellblau */
+    transition: transform 0.1s;
 }
 
 .todo-item:hover {
-    transform: translateY(-2px);
+    transform: translateY(-1px);
 }
 
-.todo-item.dragging {
-    opacity: 0.5;
-}
-
-/* LEFT SIDE: text + badge + category */
 .item-left {
     display: flex;
     align-items: center;
-    gap: 12px;
+    gap: 10px;
     flex-wrap: wrap;
 }
 
 .item-left p {
     margin: 0;
     font-weight: 600;
-    font-size: 1em; /* größere Schrift */
+    font-size: 1em;
 }
 
 .badge {
     padding: 3px 7px;
-    border-radius: 5px;
+    border-radius: 6px;
     font-size: 0.8em;
-    font-weight: bold;
+    font-weight: 500;
     color: #fff;
 }
 
 .item-category {
     font-size: 0.85em;
-    color: #555; /* besserer Kontrast */
+    color: #666;
 }
 
-/* RIGHT SIDE: buttons */
+/* BUTTONS RECHTS */
 .item-buttons {
     display: flex;
     gap: 6px;
@@ -149,51 +144,186 @@ input:focus {
     padding: 6px 10px;
     border-radius: 6px;
     border: none;
-    background-color: #007acc;
+    background-color: #5ca08b;
     color: #fff;
-    cursor: pointer;
     font-size: 0.85em;
-    transition: background-color 0.2s;
+    cursor: pointer;
+    transition: background 0.2s;
 }
 
 .item-buttons button:hover {
-    background-color: #005fa3;
+    background-color: #3d6c58;
 }
 
-/* =========================
-   FILTERS
-   ========================= */
+/* TABS */
+#tabs {
+    display: flex;
+    gap: 8px;
+    margin-bottom: 18px;
+    padding: 8px 0;
+}
+
+#tabs button {
+    padding: 6px 12px;
+    border-radius: 6px;
+    border: 1px solid #5ca08b;
+    background-color: #b3dfd1; /* helles Pastellgrün */
+    color: #2f5d50;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+#tabs button.active {
+    background-color: #3d6c58; /* dunkler für aktive Tabs */
+    color: #fff;
+}
+
+#tabs button:hover:not(.active) {
+    background-color: #7bb19e;
+}
+
+/* FILTERS */
 .filters {
-    margin-top: 25px;
+    margin-top: 20px;
 }
 
 .filters button {
-    margin-right: 5px;
+    margin-right: 6px;
 }
 
-/* =========================
-   DARK MODE
-   ========================= */
+/* EXPORT BUTTONS */
+.export-buttons button {
+    margin-right: 6px;
+}
+
+/* DARK MODE */
 body.dark {
     background-color: #121212;
     color: #e0e0e0;
 }
 
 body.dark .todo-item {
-    background-color: #1e1e1e;
-    box-shadow: 0 3px 6px rgba(255,255,255,0.08);
-}
-
-body.dark .item-buttons button {
-    background-color: #333;
-}
-
-body.dark .item-buttons button:hover {
-    background-color: #555;
+    background-color: #2a2a2a;
 }
 
 body.dark input {
     background-color: #222;
     color: #fff;
     border: 1px solid #555;
+}
+
+body.dark button {
+    background-color: #444;
+    color: #fff;
+}
+
+body.dark button:hover:not(:disabled) {
+    background-color: #666;
+}
+
+/* PRINT */
+@media print {
+    body * { visibility: hidden; }
+    #items, #items * { visibility: visible; }
+    #items { position: absolute; top: 0; left: 0; width: 100%; }
+}
+
+/* =========================
+   RESPONSIVE
+   ========================= */
+
+/* Tablets */
+@media (max-width: 768px) {
+
+    .todo-app-container {
+        width: 95%;
+        padding: 15px;
+    }
+
+    header {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 10px;
+    }
+
+    header h1 {
+        font-size: 1.6em;
+    }
+
+    .add-item {
+        flex-direction: column;
+        gap: 10px;
+    }
+
+    .add-item input,
+    .add-item button {
+        width: 100%;
+    }
+
+    .todo-item {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 10px;
+    }
+
+    .item-buttons {
+        width: 100%;
+        justify-content: flex-end;
+    }
+
+    #tabs {
+        flex-wrap: wrap;
+    }
+}
+
+/* Smartphones */
+@media (max-width: 480px) {
+
+    header h1 {
+        font-size: 1.4em;
+    }
+
+    button {
+        font-size: 0.85em;
+        padding: 6px 10px;
+    }
+
+    .todo-item {
+        padding: 10px;
+    }
+
+    .item-left p {
+        font-size: 0.95em;
+    }
+
+    .item-buttons {
+        flex-wrap: wrap;
+        gap: 5px;
+    }
+
+    .item-buttons button {
+        flex: 1; /* Buttons gleich breit */
+    }
+
+    #tabs button {
+        flex: 1;
+        text-align: center;
+    }
+}
+
+.task-details {
+    margin-top: 10px;
+    padding: 10px;
+    background: #f3f9f8;
+    border-radius: 6px;
+}
+
+.task-details textarea {
+    width: 100%;
+    border-radius: 6px;
+    border: 1px solid #ccc;
+    padding: 6px;
+    margin-bottom: 6px;
+    font-family: inherit;
 }

@@ -1,5 +1,6 @@
 let items = [];
 let currentFilter = 'all';
+let currentTab = 'all'; // 'today', 'week', 'all'
 let dragStartIndex = null;
 
 const storageKey = "items";
@@ -30,6 +31,20 @@ document.addEventListener("DOMContentLoaded", () => {
         addBtn.disabled = !input.value.trim();
     });
 
+    searchInput.addEventListener("input", () => {
+        renderItems();
+    });
+
+    // 'today', 'week', 'all'
+    window.setTab = (tab, event) => {
+        currentTab = tab;
+        renderItems();
+
+        // Active-Tab markieren
+        document.querySelectorAll("#tabs button").forEach(b => b.classList.remove("active"));
+        if (event) event.currentTarget.classList.add("active");
+    };
+
     // --- ADD ITEM ---
     window.addItem = () => {
         const value = input.value.trim();
@@ -38,7 +53,14 @@ document.addEventListener("DOMContentLoaded", () => {
 
         if (!value) return;
 
-        items.push({ text: value, done: false, date: date || null, category: category || null });
+        items.push({
+            text: value,
+            done: false,
+            date: date || null,
+            category: category || null,
+            note: "",
+            image: null
+        });
         saveItems();
         renderItems();
 
@@ -48,6 +70,71 @@ document.addEventListener("DOMContentLoaded", () => {
         addBtn.disabled = true;
     };
 
+    // Innerhalb von DOMContentLoaded
+    window.printTasks = () => {
+        const itemsDiv = document.getElementById('items');
+        const todoCards = Array.from(itemsDiv.getElementsByClassName('todo-item'));
+
+        let printHTML = '<h1>Zu tun & zu lassen</h1>';
+
+        todoCards.forEach(card => {
+            const left = card.querySelector('.item-left');
+
+            // Text + Badge + Kategorie kopieren
+            const text = left.querySelector('p')?.textContent || '';
+            const badge = left.querySelector('.badge')?.textContent || '';
+            const category = left.querySelector('.item-category')?.textContent || '';
+
+            printHTML += `<div style="border:1px solid #ccc; padding:10px; margin:5px; border-radius:5px;">
+            <strong>${text}</strong><br>
+            ${badge ? badge + '<br>' : ''}
+            ${category ? category : ''}
+        </div>`;
+        });
+
+        const printWindow = window.open('', '', 'height=600,width=800');
+        printWindow.document.write('<html><head><title>ToDo Liste</title>');
+        printWindow.document.write('<style>body{font-family:sans-serif;}</style>');
+        printWindow.document.write('</head><body>');
+        printWindow.document.write(printHTML);
+        printWindow.document.write('</body></html>');
+        printWindow.document.close();
+        printWindow.focus();
+        printWindow.print();
+    };
+
+    window.exportJSON = function () {
+        const dataStr = JSON.stringify(items, null, 2);
+        const blob = new Blob([dataStr], { type: "application/json" });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement("a");
+        a.href = url;
+        a.download = "todo_list.json";
+        a.click();
+        URL.revokeObjectURL(url);
+    }
+
+    window.exportCSV = function () {
+        const header = ["Text", "Datum", "Kategorie", "Erledigt"];
+        const rows = items.map(i => [
+            `"${i.text}"`,
+            i.date || "",
+            `"${i.category || ""}"`,
+            i.done ? "Ja" : "Nein"
+        ]);
+
+        const csvContent = [header, ...rows].map(e => e.join(",")).join("\n");
+
+        const blob = new Blob([csvContent], { type: "text/csv;charset=utf-8;" });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement("a");
+        a.href = url;
+        a.download = "todo_list.csv";
+        a.click();
+        URL.revokeObjectURL(url);
+    }
+
+
     // --- RENDER ITEMS ---
     function renderItems() {
         itemsDiv.innerHTML = "";
@@ -56,20 +143,44 @@ document.addEventListener("DOMContentLoaded", () => {
         today.setHours(0, 0, 0, 0);
 
         items.forEach((item, idx) => {
+            const itemDate = item.date ? new Date(item.date) : null;
+            if (itemDate) itemDate.setHours(0, 0, 0, 0);
 
-            // --- FILTERS ---
+            // TAB Filter
+            if (currentTab === 'today' && (!itemDate || itemDate.getTime() !== today.getTime())) return;
+            if (currentTab === 'week' && (!itemDate || itemDate - today < 0 || itemDate - today > 6 * 24 * 60 * 60 * 1000)) return;
+
+            // FILTERS
             if (currentFilter === 'active' && item.done) return;
             if (currentFilter === 'done' && !item.done) return;
+
+            // SEARCH
             if (searchValue && !item.text.toLowerCase().includes(searchValue)) return;
 
-            // --- TODO ITEM CARD ---
+            // --- CARD ---
             const card = document.createElement("div");
             card.className = "todo-item";
-            card.draggable = true;
 
-            // --- DRAG & DROP ---
-            card.addEventListener("dragstart", () => { dragStartIndex = idx; card.classList.add("dragging"); });
-            card.addEventListener("dragend", () => { card.classList.remove("dragging"); dragStartIndex = null; });
+            card.setAttribute("tabindex", "0");
+            card.setAttribute("role", "button");
+            card.setAttribute("aria-expanded", "false");
+
+            // Click auf Card toggelt Details
+            card.addEventListener("click", (e) => {
+                if (e.target.closest("button")) return; // Buttons nicht
+                toggleDetails(card);
+            });
+
+            card.addEventListener("keydown", (e) => {
+                if (e.key === "Enter" || e.key === " ") {
+                    e.preventDefault();
+                    toggleDetails(card);
+                }
+            });
+
+            // DRAG & DROP
+            card.draggable = true;
+            card.addEventListener("dragstart", () => dragStartIndex = idx);
             card.addEventListener("dragover", e => e.preventDefault());
             card.addEventListener("drop", () => {
                 if (dragStartIndex === null) return;
@@ -79,7 +190,7 @@ document.addEventListener("DOMContentLoaded", () => {
                 renderItems();
             });
 
-            // --- LEFT SIDE (text + badge + category) ---
+            // --- LEFT ---
             const left = document.createElement("div");
             left.className = "item-left";
 
@@ -89,63 +200,85 @@ document.addEventListener("DOMContentLoaded", () => {
 
             const badge = document.createElement("span");
             badge.className = "badge";
-
             if (!item.done && item.date) {
-                const itemDate = new Date(item.date);
-                itemDate.setHours(0,0,0,0);
-
-                if (itemDate < today) {
-                    badge.textContent = `📅 ${item.date} OVERDUE`;
-                    badge.style.backgroundColor = "red";
-                } else if (itemDate.getTime() === today.getTime()) {
-                    badge.textContent = `📅 ${item.date} TODAY`;
-                    badge.style.backgroundColor = "orange";
-                } else {
-                    badge.textContent = `📅 ${item.date}`;
-                    badge.style.backgroundColor = "#999";
-                }
+                const d = new Date(item.date); d.setHours(0, 0, 0, 0);
+                if (d < today) { badge.textContent = `📅 ${item.date} OVERDUE`; left.style.backgroundColor = "#f8d7da"; }
+                else if (d.getTime() === today.getTime()) { badge.textContent = `📅 ${item.date} TODAY`; left.style.backgroundColor = "#fff3cd"; }
+                else { badge.textContent = `📅 ${item.date}`; left.style.backgroundColor = "#dbeafe"; }
             }
 
-            const categorySmall = document.createElement("small");
-            categorySmall.className = "item-category";
-            categorySmall.textContent = item.category ? `🏷️ ${item.category}` : "";
+            const category = document.createElement("small");
+            category.className = "item-category";
+            category.textContent = item.category ? `🏷️ ${item.category}` : "";
 
-            left.appendChild(textP);
-            if (badge.textContent) left.appendChild(badge);
-            if (categorySmall.textContent) left.appendChild(categorySmall);
+            left.append(textP);
+            if (badge.textContent) left.append(badge);
+            if (category.textContent) left.append(category);
+
+            // --- DETAILS ---
+            const details = document.createElement("div");
+            details.className = "task-details";
+            details.style.display = "none";
+
+            // stop click propagation auf Details
+            details.addEventListener("click", e => e.stopPropagation());
+
+            const textarea = document.createElement("textarea");
+            textarea.value = item.note || "";
+            textarea.placeholder = "Notiz...";
+            textarea.addEventListener("click", e => e.stopPropagation());
+            textarea.oninput = () => { items[idx].note = textarea.value; saveItems(); };
+
+            const imgInput = document.createElement("input");
+            imgInput.type = "file";
+            imgInput.accept = "image/*";
+            imgInput.addEventListener("click", e => e.stopPropagation());
+            imgInput.onchange = (e) => {
+                const file = e.target.files[0]; if (!file) return;
+                const reader = new FileReader();
+                reader.onload = (ev) => { items[idx].image = ev.target.result; saveItems(); renderItems(); };
+                reader.readAsDataURL(file);
+            };
+
+            if (item.image) {
+                const img = document.createElement("img");
+                img.src = item.image;
+                img.style.maxWidth = "100px";
+                img.style.display = "block";
+                img.style.marginTop = "5px";
+                details.appendChild(img);
+            }
+
+            details.append(textarea, imgInput);
 
             // --- BUTTONS ---
             const btns = document.createElement("div");
             btns.className = "item-buttons";
 
+            const doneBtn = document.createElement("button");
+            doneBtn.textContent = item.done ? "Undo" : "Done";
+            doneBtn.onclick = (e) => { e.stopPropagation(); items[idx].done = !item.done; saveItems(); renderItems(); };
+
             const editBtn = document.createElement("button");
             editBtn.textContent = "Edit";
-            editBtn.onclick = () => editItem(idx);
+            editBtn.onclick = (e) => { e.stopPropagation(); editItem(idx); };
 
             const delBtn = document.createElement("button");
             delBtn.textContent = "Delete";
-            delBtn.onclick = () => { items.splice(idx, 1); saveItems(); renderItems(); };
+            delBtn.onclick = (e) => { e.stopPropagation(); items.splice(idx, 1); saveItems(); renderItems(); };
 
             const upBtn = document.createElement("button");
             upBtn.textContent = "↑";
-            upBtn.onclick = () => {
-                if (idx === 0) return;
-                [items[idx -1], items[idx]] = [items[idx], items[idx -1]];
-                saveItems(); renderItems();
-            };
+            upBtn.onclick = (e) => { e.stopPropagation(); if (idx === 0) return;[items[idx - 1], items[idx]] = [items[idx], items[idx - 1]]; saveItems(); renderItems(); };
 
             const downBtn = document.createElement("button");
             downBtn.textContent = "↓";
-            downBtn.onclick = () => {
-                if (idx === items.length -1) return;
-                [items[idx], items[idx +1]] = [items[idx +1], items[idx]];
-                saveItems(); renderItems();
-            };
+            downBtn.onclick = (e) => { e.stopPropagation(); if (idx === items.length - 1) return;[items[idx], items[idx + 1]] = [items[idx + 1], items[idx]]; saveItems(); renderItems(); };
 
-            btns.append(editBtn, delBtn, upBtn, downBtn);
+            btns.append(doneBtn, editBtn, delBtn, upBtn, downBtn);
 
-            // --- ASSEMBLE CARD ---
-            card.append(left, btns);
+            // --- APPEND ---
+            card.append(left, btns, details);
             itemsDiv.appendChild(card);
         });
     }
@@ -159,6 +292,16 @@ document.addEventListener("DOMContentLoaded", () => {
             saveItems();
             renderItems();
         }
+    }
+
+    function toggleDetails(card) {
+        const details = card.querySelector(".task-details");
+        if (!details) return;
+
+        const isOpen = details.style.display === "block";
+
+        details.style.display = isOpen ? "none" : "block";
+        card.setAttribute("aria-expanded", !isOpen);
     }
 
     // --- FILTERS ---
@@ -186,12 +329,16 @@ document.addEventListener("DOMContentLoaded", () => {
                 text: i.text,
                 done: i.done || false,
                 date: i.date || null,
-                category: i.category || null
+                category: i.category || null,
+                note: i.note || "",
+                image: i.image || null
             }));
         }
         renderItems();
     }
 
+
     function saveItems() { localStorage.setItem(storageKey, JSON.stringify(items)); }
+
 
 });
