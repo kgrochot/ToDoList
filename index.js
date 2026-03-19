@@ -6,7 +6,6 @@ let dragStartIndex = null;
 const storageKey = "items";
 
 document.addEventListener("DOMContentLoaded", () => {
-
     const itemsDiv = document.getElementById("items");
     const input = document.getElementById("itemInput");
     const searchInput = document.getElementById("searchInput");
@@ -15,8 +14,38 @@ document.addEventListener("DOMContentLoaded", () => {
     const addBtn = document.getElementById("addBtn");
     const darkBtn = document.getElementById("darkMode");
 
-    // --- INITIAL LOAD ---
+    // --- FUNKTION DEFINIEREN ---
+    async function importICSfromURL(url) {
+        try {
+            const response = await fetch(url);
+            if (!response.ok) throw new Error(`Fehler: ${response.status}`);
+            const icsText = await response.text();
+            const parsedEvents = parseICS(icsText);
+
+            parsedEvents.forEach(ev => {
+                items.push({
+                    text: ev.summary || "No title",
+                    done: false,
+                    date: ev.start || null,
+                    category: ev.category || null,
+                    note: ev.description || "",
+                    image: null
+                });
+            });
+
+            saveItems();
+            renderItems();
+            console.log(`ICS importiert: ${parsedEvents.length} Termine`);
+        } catch (err) {
+            console.error("ICS Import fehlgeschlagen:", err);
+        }
+    }
+
+    // --- ZUERST ITEMS LADEN ---
     loadItems();
+
+    // --- DANN ICS IMPORTIEREN ---
+    importICSfromURL('http://localhost:3000/calendar-proxy');
 
     // --- DARK MODE ---
     if (localStorage.getItem("darkMode") === "true") {
@@ -138,7 +167,60 @@ document.addEventListener("DOMContentLoaded", () => {
         URL.revokeObjectURL(url);
     }
 
+    // HTML: <input type="file" id="icsInput" accept=".ics">
+    const icsInput = document.getElementById('icsInput');
 
+    icsInput.addEventListener('change', (e) => {
+        const file = e.target.files[0];
+        if (!file) return;
+
+        const reader = new FileReader();
+        reader.onload = (event) => {
+            const icsText = event.target.result;
+            const parsedEvents = parseICS(icsText);
+
+            parsedEvents.forEach(ev => {
+                // Neue Items in dein Todo-Array einfügen
+                items.push({
+                    text: ev.summary || "No title",
+                    done: false,
+                    date: ev.start || null,
+                    category: ev.category || null,
+                    note: ev.description || "",
+                    image: null
+                });
+            });
+
+            saveItems();
+            renderItems();
+        };
+        reader.readAsText(file);
+    });
+    function parseICS(icsText) {
+        const events = [];
+        const lines = icsText.split(/\r?\n/);
+        let currentEvent = null;
+
+        lines.forEach(line => {
+            if (line === "BEGIN:VEVENT") {
+                currentEvent = {};
+            } else if (line === "END:VEVENT") {
+                events.push(currentEvent);
+                currentEvent = null;
+            } else if (currentEvent) {
+                if (line.startsWith("SUMMARY:")) currentEvent.summary = line.replace("SUMMARY:", "");
+                else if (line.startsWith("DTSTART")) currentEvent.start = parseICSTime(line.replace(/DTSTART.*:/, ""));
+                else if (line.startsWith("DESCRIPTION:")) currentEvent.description = line.replace("DESCRIPTION:", "");
+            }
+        });
+
+        return events;
+    }
+
+    function parseICSTime(dt) {
+        // z.B. 20260319T090000Z → YYYY-MM-DD
+        return dt.slice(0, 4) + "-" + dt.slice(4, 6) + "-" + dt.slice(6, 8);
+    }
     // --- RENDER ITEMS ---
     function renderItems() {
         itemsDiv.innerHTML = "";
@@ -367,6 +449,7 @@ document.addEventListener("DOMContentLoaded", () => {
         }
         renderItems();
     }
+
 
 
     function saveItems() { localStorage.setItem(storageKey, JSON.stringify(items)); }
