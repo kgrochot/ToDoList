@@ -1,15 +1,48 @@
 /* =========================
    GLOBAL
    ========================= */
+:root {
+    --primary: #3f7f6f;
+    --primary-hover: #2f5f52;
+    --primary-light: #dfeeee;
+
+    --background: #f7f9f9;
+    --card: #ffffff;
+    --card-alt: #eef4f3;
+
+    --text-main: #1f2a28;
+    --text-muted: #5f6f6c;
+
+    --border: #cfd8d6;
+
+    /* Dark Mode Overrides */
+    --background-dark: #121212;
+    --card-dark: #1e1e1e;
+    --card-alt-dark: #262626;
+    --text-main-dark: #e0e0e0;
+    --text-muted-dark: #b0b0b0;
+    --border-dark: #333333;
+}
+
 .todo-app-container {
-    font-family: 'Gill Sans', 'Gill Sans MT', Calibri, 'Trebuchet MS', sans-serif;
-    width: 90%;
-    max-width: 900px;
-    margin: 0 auto;
-    padding: 20px;
-    background-color: #fdfdfd;  /* sanftes Weiß */
-    border: 1px solid #dcdcdc;  /* dezenter Rahmen */
-    border-radius: 10px;
+    background-color: var(--card);
+    border: 1px solid var(--border);
+}
+
+.todo-item {
+    background-color: var(--card-alt);
+}
+
+.item-left p {
+    color: var(--text-main);
+}
+
+input {
+    border: 1px solid var(--border);
+}
+
+#tabs button.active {
+    background-color: var(--primary);
 }
 
 /* HEADER */
@@ -23,21 +56,29 @@ header {
 header h1 {
     margin: 0;
     font-size: 2em;
-    color: #3d6c58;          /* dunkleres Pastellgrün für besseren Kontrast */
-    font-weight: 700;         /* etwas fetter für Präsenz */
-    letter-spacing: 0.5px;    /* leichte Luft zwischen den Buchstaben */
-}
-h1 .highlight {
-    color: #0b8d71; /* dunkleres Grün für Kontrast */
+    color: #3d6c58;
+    /* dunkleres Pastellgrün für besseren Kontrast */
     font-weight: 700;
-    font-style: italic; /* optional, für Stil */
+    /* etwas fetter für Präsenz */
+    letter-spacing: 0.5px;
+    /* leichte Luft zwischen den Buchstaben */
 }
+
+h1 .highlight {
+    color: #0b8d71;
+    /* dunkleres Grün für Kontrast */
+    font-weight: 700;
+    font-style: italic;
+    /* optional, für Stil */
+}
+
 /* BUTTONS */
 button {
     padding: 8px 14px;
     border-radius: 6px;
     border: none;
-    background-color: #5ca08b; /* dunkleres Pastellgrün */
+    background-color: #5ca08b;
+    /* dunkleres Pastellgrün */
     color: #fff;
     cursor: pointer;
     font-weight: 600;
@@ -46,7 +87,8 @@ button {
 }
 
 button:hover:not(:disabled) {
-    background-color: #47816d; /* dunkler beim Hover */
+    background-color: #47816d;
+    /* dunkler beim Hover */
 }
 
 button:disabled {
@@ -99,7 +141,8 @@ input:focus {
     padding: 12px 15px;
     margin-bottom: 12px;
     border-radius: 8px;
-    background-color: #eaf4f4; /* Pastellblau */
+    background-color: #eaf4f4;
+    /* Pastellblau */
     transition: transform 0.1s;
 }
 
@@ -167,7 +210,8 @@ input:focus {
     padding: 6px 12px;
     border-radius: 6px;
     border: 1px solid #5ca08b;
-    background-color: #b3dfd1; /* helles Pastellgrün */
+    background-color: #b3dfd1;
+    /* helles Pastellgrün */
     color: #2f5d50;
     font-weight: 600;
     cursor: pointer;
@@ -175,7 +219,8 @@ input:focus {
 }
 
 #tabs button.active {
-    background-color: #3d6c58; /* dunkler für aktive Tabs */
+    background-color: #3d6c58;
+    /* dunkler für aktive Tabs */
     color: #fff;
 }
 
@@ -199,34 +244,60 @@ input:focus {
 
 /* DARK MODE */
 body.dark {
-    background-color: #121212;
-    color: #e0e0e0;
+    background-color: var(--background-dark);
+    color: var(--text-main-dark);
+}
+
+body.dark .todo-app-container {
+    background-color: var(--card-dark);
+    border: 1px solid var(--border-dark);
 }
 
 body.dark .todo-item {
-    background-color: #2a2a2a;
+    background-color: var(--card-alt-dark);
+}
+
+body.dark .item-left p {
+    color: var(--text-main-dark);
+}
+
+body.dark .item-category,
+body.dark .item-note-block {
+    color: var(--text-muted-dark);
 }
 
 body.dark input {
     background-color: #222;
-    color: #fff;
+    color: #e0e0e0;
     border: 1px solid #555;
 }
 
 body.dark button {
-    background-color: #444;
+    background-color: #3f7f6f;
     color: #fff;
 }
 
 body.dark button:hover:not(:disabled) {
-    background-color: #666;
+    background-color: #2f5f52;
 }
 
 /* PRINT */
 @media print {
-    body * { visibility: hidden; }
-    #items, #items * { visibility: visible; }
-    #items { position: absolute; top: 0; left: 0; width: 100%; }
+    body * {
+        visibility: hidden;
+    }
+
+    #items,
+    #items * {
+        visibility: visible;
+    }
+
+    #items {
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+    }
 }
 
 /* =========================
@@ -303,7 +374,8 @@ body.dark button:hover:not(:disabled) {
     }
 
     .item-buttons button {
-        flex: 1; /* Buttons gleich breit */
+        flex: 1;
+        /* Buttons gleich breit */
     }
 
     #tabs button {
@@ -326,4 +398,24 @@ body.dark button:hover:not(:disabled) {
     padding: 6px;
     margin-bottom: 6px;
     font-family: inherit;
+}
+
+.item-note-preview {
+    display: block;
+    font-size: 0.85em;
+    color: #555;
+    margin-top: 2px;
+    overflow: hidden;
+    white-space: nowrap;
+    text-overflow: ellipsis;
+    max-width: 200px;
+    /* oder 60% der Card-Breite */
+}
+
+.item-note-block {
+    font-size: 0.85em;
+    color: #555;
+    margin: 5px 0 0 0;
+    padding: 15px;
+    word-break: break-word;
 }

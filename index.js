@@ -79,16 +79,20 @@ document.addEventListener("DOMContentLoaded", () => {
 
         todoCards.forEach(card => {
             const left = card.querySelector('.item-left');
+            const details = card.querySelector('.task-details');
 
-            // Text + Badge + Kategorie kopieren
             const text = left.querySelector('p')?.textContent || '';
             const badge = left.querySelector('.badge')?.textContent || '';
             const category = left.querySelector('.item-category')?.textContent || '';
+            const note = details?.querySelector('textarea')?.value || '';
+            const imgSrc = details?.querySelector('img')?.src || '';
 
             printHTML += `<div style="border:1px solid #ccc; padding:10px; margin:5px; border-radius:5px;">
             <strong>${text}</strong><br>
             ${badge ? badge + '<br>' : ''}
-            ${category ? category : ''}
+            ${category ? category + '<br>' : ''}
+            ${note ? '📝 ' + note + '<br>' : ''}
+            ${imgSrc ? '<img src="' + imgSrc + '" style="max-width:150px; display:block; margin-top:5px;">' : ''}
         </div>`;
         });
 
@@ -200,11 +204,27 @@ document.addEventListener("DOMContentLoaded", () => {
 
             const badge = document.createElement("span");
             badge.className = "badge";
+
             if (!item.done && item.date) {
-                const d = new Date(item.date); d.setHours(0, 0, 0, 0);
-                if (d < today) { badge.textContent = `📅 ${item.date} OVERDUE`; left.style.backgroundColor = "#f8d7da"; }
-                else if (d.getTime() === today.getTime()) { badge.textContent = `📅 ${item.date} TODAY`; left.style.backgroundColor = "#fff3cd"; }
-                else { badge.textContent = `📅 ${item.date}`; left.style.backgroundColor = "#dbeafe"; }
+                const d = new Date(item.date);
+                d.setHours(0, 0, 0, 0);
+
+                if (d < today) {
+                    badge.textContent = `📅 ${item.date} Wichtig`;
+                    badge.style.backgroundColor = "#b33822"; // dunkelrot für Badge
+                    badge.style.color = "#ffffff";           // Weißer Text für Kontrast
+                }
+                else if (d.getTime() === today.getTime()) {
+                    badge.textContent = `📅 ${item.date} Heute`;
+                    badge.style.backgroundColor = "#269fcf";  // dunkleres Gelb / Ocker
+                    badge.style.color = "#ffffff";            // Weißer Text
+                }
+                else {
+                    badge.textContent = `📅 ${item.date}`;
+                    left.style.backgroundColor = "#dbeafe";   // sanftes Blau
+                    badge.style.backgroundColor = "#2f6f9f";  // dunkleres Blau für Badge
+                    badge.style.color = "#ffffff";            // Weißer Text
+                }
             }
 
             const category = document.createElement("small");
@@ -214,6 +234,12 @@ document.addEventListener("DOMContentLoaded", () => {
             left.append(textP);
             if (badge.textContent) left.append(badge);
             if (category.textContent) left.append(category);
+
+            // --- Notiz-Preview direkt auf der Card ---
+            const notePreview = document.createElement("div");
+            notePreview.className = "item-note-preview";
+            notePreview.textContent = item.note || "";
+            left.appendChild(notePreview);
 
             // --- DETAILS ---
             const details = document.createElement("div");
@@ -227,7 +253,12 @@ document.addEventListener("DOMContentLoaded", () => {
             textarea.value = item.note || "";
             textarea.placeholder = "Notiz...";
             textarea.addEventListener("click", e => e.stopPropagation());
-            textarea.oninput = () => { items[idx].note = textarea.value; saveItems(); };
+            textarea.addEventListener("keydown", e => e.stopPropagation()); // verhindert Enter/Leertaste schließen
+            textarea.oninput = () => {
+                items[idx].note = textarea.value;
+                notePreview.textContent = textarea.value; // Preview aktualisieren
+                saveItems();
+            };
 
             const imgInput = document.createElement("input");
             imgInput.type = "file";
