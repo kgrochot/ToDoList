@@ -2,8 +2,8 @@ let items = [];
 let currentFilter = 'all';
 let currentTab = 'all'; // 'today', 'week', 'all'
 let dragStartIndex = null;
-
 const storageKey = "items";
+
 
 document.addEventListener("DOMContentLoaded", () => {
     const itemsDiv = document.getElementById("items");
@@ -13,122 +13,78 @@ document.addEventListener("DOMContentLoaded", () => {
     const categoryInput = document.getElementById("categoryInput");
     const addBtn = document.getElementById("addBtn");
     const darkBtn = document.getElementById("darkMode");
+    //const icsInput = document.getElementById('icsInput');
 
-    // --- FUNKTION DEFINIEREN ---
-    async function importICSfromURL(url) {
-        try {
-            const response = await fetch(url);
-            if (!response.ok) throw new Error(`Fehler: ${response.status}`);
-            const icsText = await response.text();
-            const parsedEvents = parseICS(icsText);
-
-            parsedEvents.forEach(ev => {
-                items.push({
-                    text: ev.summary || "No title",
-                    done: false,
-                    date: ev.start || null,
-                    category: ev.category || null,
-                    note: ev.description || "",
-                    image: null
-                });
-            });
-
-            saveItems();
-            renderItems();
-            console.log(`ICS importiert: ${parsedEvents.length} Termine`);
-        } catch (err) {
-            console.error("ICS Import fehlgeschlagen:", err);
-        }
-    }
-
-    // --- ZUERST ITEMS LADEN ---
+    // --- LOAD ITEMS ---
     loadItems();
-
-    // --- DANN ICS IMPORTIEREN ---
-    importICSfromURL('http://localhost:3000/calendar-proxy');
 
     // --- DARK MODE ---
     if (localStorage.getItem("darkMode") === "true") {
         document.body.classList.add("dark");
         darkBtn.textContent = "☀️ Light Mode";
     }
-
     darkBtn.addEventListener("click", toggleDarkMode);
 
     // --- ENABLE/DISABLE ADD BUTTON ---
-    input.addEventListener("input", () => {
-        addBtn.disabled = !input.value.trim();
-    });
-
-    searchInput.addEventListener("input", () => {
-        renderItems();
-    });
-
-    // 'today', 'week', 'all'
-    window.setTab = (tab, event) => {
-        currentTab = tab;
-        renderItems();
-
-        // Active-Tab markieren
-        document.querySelectorAll("#tabs button").forEach(b => b.classList.remove("active"));
-        if (event) event.currentTarget.classList.add("active");
-    };
+    input.addEventListener("input", () => { addBtn.disabled = !input.value.trim(); });
+    searchInput.addEventListener("input", () => renderItems());
 
     // --- ADD ITEM ---
     window.addItem = () => {
         const value = input.value.trim();
-        const date = dateInput.value;
-        const category = categoryInput.value;
-
         if (!value) return;
-
         items.push({
             text: value,
             done: false,
-            date: date || null,
-            category: category || null,
-            note: "",
-            image: null
+            date: dateInput.value || null,
+            category: categoryInput.value || null,
+            note: ""
         });
         saveItems();
         renderItems();
-
         input.value = "";
         dateInput.value = "";
         categoryInput.value = "";
         addBtn.disabled = true;
     };
 
-    // Innerhalb von DOMContentLoaded
+    // --- FILTERS ---
+    window.setFilter = (filter, event) => {
+        currentFilter = filter;
+        renderItems();
+        document.querySelectorAll(".filters button").forEach(btn => btn.classList.remove("active"));
+        if (event) event.currentTarget.classList.add("active");
+    };
+
+    // --- TAB SWITCHING ---
+    window.setTab = (tab, event) => {
+        currentTab = tab;
+        renderItems();
+        document.querySelectorAll("#tabs button").forEach(b => b.classList.remove("active"));
+        if (event) event.currentTarget.classList.add("active");
+    };
+
+    // --- CLEAR COMPLETED ---
+    window.clearCompleted = () => {
+        items = items.filter(i => !i.done);
+        saveItems();
+        renderItems();
+    };
+
+    // --- PRINT / EXPORT ---
     window.printTasks = () => {
-        const itemsDiv = document.getElementById('items');
-        const todoCards = Array.from(itemsDiv.getElementsByClassName('todo-item'));
-
         let printHTML = '<h1>Zu tun & zu lassen</h1>';
-
-        todoCards.forEach(card => {
-            const left = card.querySelector('.item-left');
-            const details = card.querySelector('.task-details');
-
-            const text = left.querySelector('p')?.textContent || '';
-            const badge = left.querySelector('.badge')?.textContent || '';
-            const category = left.querySelector('.item-category')?.textContent || '';
-            const note = details?.querySelector('textarea')?.value || '';
-            const imgSrc = details?.querySelector('img')?.src || '';
-
+        items.forEach(item => {
             printHTML += `<div style="border:1px solid #ccc; padding:10px; margin:5px; border-radius:5px;">
-            <strong>${text}</strong><br>
-            ${badge ? badge + '<br>' : ''}
-            ${category ? category + '<br>' : ''}
-            ${note ? '📝 ' + note + '<br>' : ''}
-            ${imgSrc ? '<img src="' + imgSrc + '" style="max-width:150px; display:block; margin-top:5px;">' : ''}
-        </div>`;
+            <strong>${item.text}</strong><br>
+            ${item.date ? item.date + '<br>' : ''}
+            ${item.category ? item.category + '<br>' : ''}
+            ${item.note ? '📝 ' + item.note + '<br>' : ''}
+            ${item.done ? '✅ Erledigt' : '❌ Offen'}
+            </div>`;
         });
-
         const printWindow = window.open('', '', 'height=600,width=800');
-        printWindow.document.write('<html><head><title>ToDo Liste</title>');
-        printWindow.document.write('<style>body{font-family:sans-serif;}</style>');
-        printWindow.document.write('</head><body>');
+        printWindow.document.write('<html><head><title>ToDo Liste</title><style>body{font-family:sans-serif;}</style></head><body>');
         printWindow.document.write(printHTML);
         printWindow.document.write('</body></html>');
         printWindow.document.close();
@@ -136,28 +92,20 @@ document.addEventListener("DOMContentLoaded", () => {
         printWindow.print();
     };
 
-    window.exportJSON = function () {
-        const dataStr = JSON.stringify(items, null, 2);
-        const blob = new Blob([dataStr], { type: "application/json" });
+    window.exportJSON = () => {
+        const blob = new Blob([JSON.stringify(items, null, 2)], { type: "application/json" });
         const url = URL.createObjectURL(blob);
         const a = document.createElement("a");
         a.href = url;
         a.download = "todo_list.json";
         a.click();
         URL.revokeObjectURL(url);
-    }
+    };
 
-    window.exportCSV = function () {
+    window.exportCSV = () => {
         const header = ["Text", "Datum", "Kategorie", "Erledigt"];
-        const rows = items.map(i => [
-            `"${i.text}"`,
-            i.date || "",
-            `"${i.category || ""}"`,
-            i.done ? "Ja" : "Nein"
-        ]);
-
+        const rows = items.map(i => [i.text, i.date || "", i.category || "", i.done ? "Ja" : "Nein"]);
         const csvContent = [header, ...rows].map(e => e.join(",")).join("\n");
-
         const blob = new Blob([csvContent], { type: "text/csv;charset=utf-8;" });
         const url = URL.createObjectURL(blob);
         const a = document.createElement("a");
@@ -165,78 +113,70 @@ document.addEventListener("DOMContentLoaded", () => {
         a.download = "todo_list.csv";
         a.click();
         URL.revokeObjectURL(url);
-    }
+    };
 
-    // HTML: <input type="file" id="icsInput" accept=".ics">
-    const icsInput = document.getElementById('icsInput');
+    const icsFileInput = document.getElementById('icsFileInput');
+    const importBtn = document.getElementById('importBtn');
 
-    icsInput.addEventListener('change', (e) => {
+    importBtn.addEventListener('click', () => {
+        icsFileInput.click(); // Öffnet den Datei-Dialog
+    });
+
+    icsFileInput.addEventListener('change', (e) => {
         const file = e.target.files[0];
         if (!file) return;
 
         const reader = new FileReader();
         reader.onload = (event) => {
-            const icsText = event.target.result;
-            const parsedEvents = parseICS(icsText);
-
-            parsedEvents.forEach(ev => {
-                // Neue Items in dein Todo-Array einfügen
-                items.push({
-                    text: ev.summary || "No title",
-                    done: false,
-                    date: ev.start || null,
-                    category: ev.category || null,
-                    note: ev.description || "",
-                    image: null
-                });
-            });
-
+            const parsedEvents = parseICS(event.target.result);
+            parsedEvents.forEach(ev => items.push({
+                text: ev.summary || "No title",
+                done: false,
+                date: ev.start || null,
+                category: ev.category || null,
+                note: ev.description || ""
+            }));
             saveItems();
             renderItems();
         };
         reader.readAsText(file);
     });
-    function parseICS(icsText) {
-        const events = [];
-        const lines = icsText.split(/\r?\n/);
-        let currentEvent = null;
 
-        lines.forEach(line => {
-            if (line === "BEGIN:VEVENT") {
-                currentEvent = {};
-            } else if (line === "END:VEVENT") {
-                events.push(currentEvent);
-                currentEvent = null;
-            } else if (currentEvent) {
-                if (line.startsWith("SUMMARY:")) currentEvent.summary = line.replace("SUMMARY:", "");
-                else if (line.startsWith("DTSTART")) currentEvent.start = parseICSTime(line.replace(/DTSTART.*:/, ""));
-                else if (line.startsWith("DESCRIPTION:")) currentEvent.description = line.replace("DESCRIPTION:", "");
-            }
-        });
-
-        return events;
-    }
-
-    function parseICSTime(dt) {
-        // z.B. 20260319T090000Z → YYYY-MM-DD
-        return dt.slice(0, 4) + "-" + dt.slice(4, 6) + "-" + dt.slice(6, 8);
-    }
     // --- RENDER ITEMS ---
     function renderItems() {
         itemsDiv.innerHTML = "";
         const searchValue = searchInput.value.toLowerCase();
-        const today = new Date();
-        today.setHours(0, 0, 0, 0);
+        const today = new Date(); today.setHours(0, 0, 0, 0);
 
         items.forEach((item, idx) => {
             const itemDate = item.date ? new Date(item.date) : null;
             if (itemDate) itemDate.setHours(0, 0, 0, 0);
 
-            // TAB Filter
+            // TAB FILTER
             if (currentTab === 'today' && (!itemDate || itemDate.getTime() !== today.getTime())) return;
-            if (currentTab === 'week' && (!itemDate || itemDate - today < 0 || itemDate - today > 6 * 24 * 60 * 60 * 1000)) return;
 
-            // FILTERS
+            function getWeekNumber(d) {
+                const date = new Date(d.getTime());
+                date.setHours(0, 0, 0, 0);
+                // Donnerstag der Woche nehmen, um ISO-Woche zu berechnen
+                date.setDate(date.getDate() + 3 - (date.getDay() + 6) % 7);
+                const week1 = new Date(date.getFullYear(), 0, 4);
+                return 1 + Math.round(((date - week1) / 86400000 - 3 + (week1.getDay() + 6) % 7) / 7);
+            }
+
+            if (currentTab === 'week') {
+                if (!itemDate) return;
+                const itemWeek = getWeekNumber(itemDate);
+                const todayWeek = getWeekNumber(today);
+                if (itemWeek !== todayWeek || itemDate.getFullYear() !== today.getFullYear()) return;
+            }
+
+            if (currentTab === 'month') {
+                if (!itemDate) return;
+                if (itemDate.getMonth() !== today.getMonth() || itemDate.getFullYear() !== today.getFullYear()) return;
+            }
+
+            // FILTER
             if (currentFilter === 'active' && item.done) return;
             if (currentFilter === 'done' && !item.done) return;
 
@@ -246,23 +186,14 @@ document.addEventListener("DOMContentLoaded", () => {
             // --- CARD ---
             const card = document.createElement("div");
             card.className = "todo-item";
-
             card.setAttribute("tabindex", "0");
             card.setAttribute("role", "button");
             card.setAttribute("aria-expanded", "false");
+            card.classList.add("category-" + (item.category || "default").toLowerCase());
 
-            // Click auf Card toggelt Details
-            card.addEventListener("click", (e) => {
-                if (e.target.closest("button")) return; // Buttons nicht
-                toggleDetails(card);
-            });
-
-            card.addEventListener("keydown", (e) => {
-                if (e.key === "Enter" || e.key === " ") {
-                    e.preventDefault();
-                    toggleDetails(card);
-                }
-            });
+            // Click toggles details
+            card.addEventListener("click", e => { if (!e.target.closest("button")) toggleDetails(card); });
+            card.addEventListener("keydown", e => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); toggleDetails(card); } });
 
             // DRAG & DROP
             card.draggable = true;
@@ -277,155 +208,96 @@ document.addEventListener("DOMContentLoaded", () => {
             });
 
             // --- LEFT ---
-            const left = document.createElement("div");
-            left.className = "item-left";
-
-            const textP = document.createElement("p");
-            textP.textContent = item.text;
+            const left = document.createElement("div"); left.className = "item-left";
+            const textP = document.createElement("p"); textP.textContent = item.text;
             if (item.done) textP.style.textDecoration = "line-through";
 
-            const badge = document.createElement("span");
-            badge.className = "badge";
+            const badge = document.createElement("span"); badge.className = "badge";
+            if (item.date) badge.textContent = `📅 ${item.date}`;
 
-            if (!item.done && item.date) {
-                const d = new Date(item.date);
-                d.setHours(0, 0, 0, 0);
-
-                if (d < today) {
-                    badge.textContent = `📅 ${item.date} Wichtig`;
-                    badge.style.backgroundColor = "#b33822"; // dunkelrot für Badge
-                    badge.style.color = "#ffffff";           // Weißer Text für Kontrast
-                }
-                else if (d.getTime() === today.getTime()) {
-                    badge.textContent = `📅 ${item.date} Heute`;
-                    badge.style.backgroundColor = "#269fcf";  // dunkleres Gelb / Ocker
-                    badge.style.color = "#ffffff";            // Weißer Text
-                }
-                else {
-                    badge.textContent = `📅 ${item.date}`;
-                    left.style.backgroundColor = "#dbeafe";   // sanftes Blau
-                    badge.style.backgroundColor = "#2f6f9f";  // dunkleres Blau für Badge
-                    badge.style.color = "#ffffff";            // Weißer Text
-                }
-            }
-
-            const category = document.createElement("small");
-            category.className = "item-category";
+            const category = document.createElement("small"); category.className = "item-category";
             category.textContent = item.category ? `🏷️ ${item.category}` : "";
 
-            left.append(textP);
-            if (badge.textContent) left.append(badge);
-            if (category.textContent) left.append(category);
+            const notePreview = document.createElement("div"); notePreview.className = "item-note-preview"; notePreview.textContent = item.note || "";
 
-            // --- Notiz-Preview direkt auf der Card ---
-            const notePreview = document.createElement("div");
-            notePreview.className = "item-note-preview";
-            notePreview.textContent = item.note || "";
-            left.appendChild(notePreview);
+            left.append(textP); if (badge.textContent) left.append(badge);
+            if (category.textContent) left.append(category); left.appendChild(notePreview);
 
             // --- DETAILS ---
-            const details = document.createElement("div");
-            details.className = "task-details";
-            details.style.display = "none";
-
-            // stop click propagation auf Details
-            details.addEventListener("click", e => e.stopPropagation());
-
+            const details = document.createElement("div"); details.className = "task-details"; details.style.display = "none";
             const textarea = document.createElement("textarea");
-            textarea.value = item.note || "";
-            textarea.placeholder = "Notiz...";
+            textarea.value = item.note || ""; textarea.placeholder = "Notiz...";
             textarea.addEventListener("click", e => e.stopPropagation());
-            textarea.addEventListener("keydown", e => e.stopPropagation()); // verhindert Enter/Leertaste schließen
-            textarea.oninput = () => {
-                items[idx].note = textarea.value;
-                notePreview.textContent = textarea.value; // Preview aktualisieren
-                saveItems();
-            };
+            textarea.addEventListener("keydown", e => e.stopPropagation());
+            textarea.oninput = () => { items[idx].note = textarea.value; notePreview.textContent = textarea.value; saveItems(); };
+            details.append(textarea);
 
-            const imgInput = document.createElement("input");
-            imgInput.type = "file";
-            imgInput.accept = "image/*";
-            imgInput.addEventListener("click", e => e.stopPropagation());
-            imgInput.onchange = (e) => {
-                const file = e.target.files[0]; if (!file) return;
-                const reader = new FileReader();
-                reader.onload = (ev) => { items[idx].image = ev.target.result; saveItems(); renderItems(); };
-                reader.readAsDataURL(file);
-            };
-
-            if (item.image) {
-                const img = document.createElement("img");
-                img.src = item.image;
-                img.style.maxWidth = "100px";
-                img.style.display = "block";
-                img.style.marginTop = "5px";
-                details.appendChild(img);
-            }
-
-            details.append(textarea, imgInput);
-
-            // --- BUTTONS ---
+            // --- BUTTONS CONTAINER ---
             const btns = document.createElement("div");
             btns.className = "item-buttons";
 
+            // DONE
             const doneBtn = document.createElement("button");
-            doneBtn.textContent = item.done ? "Undo" : "Done";
-            doneBtn.onclick = (e) => { e.stopPropagation(); items[idx].done = !item.done; saveItems(); renderItems(); };
+            doneBtn.innerHTML = item.done
+                ? `<svg viewBox="0 0 24 24" width="16" height="16" fill="green">
+         <path d="M20 6L9 17l-5-5"/>
+       </svg>`
+                : `<svg viewBox="0 0 24 24" width="16" height="16" fill="gray">
+         <path d="M20 6L9 17l-5-5"/>
+       </svg>`;
+            doneBtn.title = item.done ? "Undo" : "Done";
+            doneBtn.onclick = (e) => {
+                e.stopPropagation();
+                items[idx].done = !items[idx].done;
+                saveItems();
+                renderItems();
+            };
 
+            // EDIT
             const editBtn = document.createElement("button");
-            editBtn.textContent = "Edit";
-            editBtn.onclick = (e) => { e.stopPropagation(); editItem(idx); };
+            editBtn.innerHTML = `
+    <svg viewBox="0 0 24 24" width="16" height="16" fill="blue">
+        <path d="M3 17.25V21h3.75L17.8 9.94l-3.75-3.75L3 17.25z"/>
+    </svg>`;
+            editBtn.title = "Edit";
+            editBtn.onclick = (e) => {
+                e.stopPropagation();
+                editItem(idx);
+            };
 
+            // DELETE
             const delBtn = document.createElement("button");
-            delBtn.textContent = "Delete";
-            delBtn.onclick = (e) => { e.stopPropagation(); items.splice(idx, 1); saveItems(); renderItems(); };
+            delBtn.innerHTML = `
+    <svg viewBox="0 0 24 24" width="16" height="16" fill="red">
+        <path d="M3 6h18v2H3V6zm2 3h14v12H5V9z"/>
+    </svg>`;
+            delBtn.title = "Delete";
+            delBtn.onclick = (e) => {
+                e.stopPropagation();
+                items.splice(idx, 1);
+                saveItems();
+                renderItems();
+            };
 
-            const upBtn = document.createElement("button");
-            upBtn.textContent = "↑";
-            upBtn.onclick = (e) => { e.stopPropagation(); if (idx === 0) return;[items[idx - 1], items[idx]] = [items[idx], items[idx - 1]]; saveItems(); renderItems(); };
-
-            const downBtn = document.createElement("button");
-            downBtn.textContent = "↓";
-            downBtn.onclick = (e) => { e.stopPropagation(); if (idx === items.length - 1) return;[items[idx], items[idx + 1]] = [items[idx + 1], items[idx]]; saveItems(); renderItems(); };
-
-            btns.append(doneBtn, editBtn, delBtn, upBtn, downBtn);
-
-            // --- APPEND ---
+            btns.append(doneBtn, editBtn, delBtn);
             card.append(left, btns, details);
             itemsDiv.appendChild(card);
         });
     }
 
-    // --- EDIT ITEM FUNCTION ---
+    // --- EDIT ITEM ---
     function editItem(idx) {
-        const item = items[idx];
-        const newText = prompt("Edit task:", item.text);
-        if (newText !== null) {
-            items[idx].text = newText.trim() || item.text;
-            saveItems();
-            renderItems();
-        }
+        const newText = prompt("Edit task:", items[idx].text);
+        if (newText !== null) { items[idx].text = newText.trim() || items[idx].text; saveItems(); renderItems(); }
     }
 
     function toggleDetails(card) {
         const details = card.querySelector(".task-details");
         if (!details) return;
-
         const isOpen = details.style.display === "block";
-
         details.style.display = isOpen ? "none" : "block";
         card.setAttribute("aria-expanded", !isOpen);
     }
-
-    // --- FILTERS ---
-    window.setFilter = (filter) => { currentFilter = filter; renderItems(); };
-
-    // --- CLEAR COMPLETED ---
-    window.clearCompleted = () => {
-        items = items.filter(i => !i.done);
-        saveItems();
-        renderItems();
-    };
 
     // --- DARK MODE ---
     function toggleDarkMode() {
@@ -437,22 +309,32 @@ document.addEventListener("DOMContentLoaded", () => {
     // --- LOCALSTORAGE ---
     function loadItems() {
         const oldItems = localStorage.getItem(storageKey);
-        if (oldItems) {
-            items = JSON.parse(oldItems).map(i => ({
-                text: i.text,
-                done: i.done || false,
-                date: i.date || null,
-                category: i.category || null,
-                note: i.note || "",
-                image: i.image || null
-            }));
-        }
+        if (oldItems) items = JSON.parse(oldItems).map(i => ({ text: i.text, done: i.done || false, date: i.date || null, category: i.category || null, note: i.note || "" }));
         renderItems();
     }
-
-
-
     function saveItems() { localStorage.setItem(storageKey, JSON.stringify(items)); }
 
+    //Clear Completed
+    window.clearAll = () => {
+        if (!confirm("Alle Aufgaben wirklich löschen?")) return;
+        items = [];
+        saveItems();
+        renderItems();
+    };
 
+    // --- ICS PARSER --
+    function parseICS(icsText) {
+        const events = []; const lines = icsText.split(/\r?\n/); let current = null;
+        lines.forEach(line => {
+            if (line === "BEGIN:VEVENT") current = {};
+            else if (line === "END:VEVENT") { events.push(current); current = null; }
+            else if (current) {
+                if (line.startsWith("SUMMARY:")) current.summary = line.replace("SUMMARY:", "");
+                else if (line.startsWith("DTSTART")) current.start = parseICSTime(line.replace(/DTSTART.*:/, ""));
+                else if (line.startsWith("DESCRIPTION")) current.description = line.split(":").slice(1).join(":");
+            }
+        });
+        return events;
+    }
+    function parseICSTime(dt) { return dt.slice(0, 4) + "-" + dt.slice(4, 6) + "-" + dt.slice(6, 8); }
 });

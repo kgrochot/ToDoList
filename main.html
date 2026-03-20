@@ -1,62 +1,68 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="de">
 
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Aufgabenplaner</title>
+    <title>ToDo App</title>
     <link rel="stylesheet" href="style.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600&display=swap" rel="stylesheet">
 </head>
 
-<body class="todo-app-container">
+<body>
 
-    <!-- HEADER -->
-    <header>
-        <h1>Zu <span class="highlight">tun</span> & zu <span class="highlight">Lassen</span></h1>
-        <button id="darkMode">🌙 Dark Mode</button>
-    </header>
+    <div class="todo-app-container">
+        <!-- HEADER -->
+        <header>
+            <h1>Zu <span class="highlight">tun</span> & zu <span class="highlight">Lassen</span></h1>
+            <button id="darkMode">🌙 Dark Mode</button>
+        </header>
 
-    <!-- ADD ITEM -->
-    <div class="add-item">
-        <input id="itemInput" type="text" placeholder="Add an item">
-        <input id="dateInput" type="date">
-        <input id="categoryInput" type="text" placeholder="Kategorie / Tag">
-        <button id="addBtn" onclick="addItem()" disabled>Add Item</button>
+        <!-- ADD ITEM -->
+        <div class="add-item">
+            <input type="text" id="itemInput" placeholder="Neue Aufgabe...">
+            <input type="date" id="dateInput">
+            <input type="text" id="categoryInput" placeholder="Kategorie">
+            <button id="addBtn" onclick="addItem()" disabled>Hinzufügen</button>
+            <!-- Datei-Input, versteckt -->
+            <input type="file" id="icsFileInput" accept=".ics" style="display:none;">
+
+            
+            <!-- Button zum Öffnen des Datei-Dialogs -->
+            <button id="importBtn">Importieren aus Google Kalender</button>
+            <button onclick="clearAll()">Alles löschen</button>
+        </div>
+
+        <!-- SEARCH BAR -->
+        <div class="search-bar">
+            <input type="text" id="searchInput" placeholder="Suche...">
+        </div>
+
+        <!-- TABS -->
+        <div id="tabs">
+            <button onclick="setTab('today', event)">Heute</button>
+            <button onclick="setTab('week', event)">Woche</button>
+            <button onclick="setTab('month', event)">Monat</button>
+            <button onclick="setTab('all', event)" class="active">Alle</button>
+        </div>
+
+        <!-- FILTERS -->
+        <div class="filters">
+            <button onclick="setFilter('all', event)">Alle</button>
+            <button onclick="setFilter('active', event)">Nicht erledigt</button>
+            <button onclick="setFilter('done', event)">Erledigt</button>
+        </div>
+
+        <!-- EXPORT -->
+        <div class="export-buttons">
+            <button onclick="exportJSON()">Export JSON</button>
+            <button onclick="exportCSV()">Export CSV</button>
+            <button onclick="printTasks()">Drucken</button>
+        </div>
+
+        <!-- ITEMS -->
+        <div id="items"></div>
     </div>
-
-    <!-- SEARCH -->
-    <div class="search-bar">
-        <input id="searchInput" type="text" placeholder="Search..." oninput="renderItems()">
-    </div>
-
-    <!-- TABS -->
-    <div id="tabs">
-        <button onclick="setTab('today', event)">Heute</button>
-        <button onclick="setTab('week', event)">Diese Woche</button>
-        <button onclick="setTab('all', event)" class="active">Alle Aufgaben</button>
-    </div>
-
-    <!-- ITEMS LIST -->
-    <div id="items"></div>
-
-    <!-- FILTERS -->
-    <div class="filters">
-        <button class="filter-btn" onclick="setFilter('all')">Alle</button>
-        <button class="filter-btn" onclick="setFilter('active')">Unerledigt</button>
-        <button class="filter-btn" onclick="setFilter('done')">Erledigt</button>
-        <button onclick="clearCompleted()">Erledigte löschen</button>
-    </div>
-
-    <div id="tabs">
-        <button onclick="printTasks()">🖨️ Drucken / PDF</button>
-        <button onclick="exportJSON()">💾 Export JSON</button>
-        <button onclick="exportCSV()">💾 Export CSV</button>
-    </div>
-    <div>
-        <label>ICS importieren:</label>
-        <input type="file" id="icsInput" accept=".ics">
-    </div>
-
 
     <script src="index.js"></script>
 </body>

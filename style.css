@@ -1,330 +1,406 @@
 /* =========================
-   GLOBAL
+   GLOBALNE ZMIENNE
    ========================= */
 :root {
+    /* Podstawowe kolory */
     --primary: #3f7f6f;
     --primary-hover: #2f5f52;
-    --primary-light: #dfeeee;
+    --accent: #f4a261;
 
-    --background: #f7f9f9;
-    --card: #ffffff;
-    --card-alt: #eef4f3;
+    /* Tła */
+    --background: #ffffff;
+    --card: #f4f7f6;
+    --card-alt: #e9f0ef;
 
+    /* Tekst */
     --text-main: #1f2a28;
-    --text-muted: #5f6f6c;
+    --text-muted: #6b7c78;
 
-    --border: #cfd8d6;
+    /* Ramki */
+    --border: #d7e0de;
 
-    /* Dark Mode Overrides */
-    --background-dark: #121212;
-    --card-dark: #1e1e1e;
-    --card-alt-dark: #262626;
+    /* Tabs */
+    --tab-today: #269fcf;
+    --tab-week: #f4a261;
+    --tab-month: #2a9d8f;
+    --tab-all: #5ca08b;
+
+    /* Filtry */
+    --filter-all: #5ca08b;
+    --filter-active: #f4a261;
+    --filter-done: #e76f51;
+
+    /* Badge */
+    --badge-overdue: #b33822;
+    --badge-today: #269fcf;
+    --badge-future: #2f6f9f;
+
+    /* DARK MODE */
+    --background-dark: #292727;
+    --card-dark: #111111;
+    --card-alt-dark: #524b4b;
     --text-main-dark: #e0e0e0;
     --text-muted-dark: #b0b0b0;
     --border-dark: #333333;
+    --badge-overdue-dark: #b33822;
+    --badge-today-dark: #1a6b94;
+    --badge-future-dark: #1f6f9f;
 }
 
-.todo-app-container {
-    background-color: var(--card);
-    border: 1px solid var(--border);
-}
-
-.todo-item {
-    background-color: var(--card-alt);
-}
-
-.item-left p {
+/* =========================
+   BODY & KONTAINER
+   ========================= */
+body {
+    margin: 0;
+    font-family: 'Inter', sans-serif;
+    background-color: var(--background);
     color: var(--text-main);
 }
 
-input {
+.todo-app-container {
+    max-width: 800px;
+    margin: 20px auto;
+    padding: 20px;
+    background-color: var(--card);
     border: 1px solid var(--border);
+    border-radius: 10px;
 }
 
-#tabs button.active {
-    background-color: var(--primary);
-}
-
-/* HEADER */
+/* =========================
+   HEADER
+   ========================= */
 header {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    margin-bottom: 25px;
+    margin-bottom: 20px;
 }
 
 header h1 {
     margin: 0;
-    font-size: 2em;
-    color: #3d6c58;
-    /* dunkleres Pastellgrün für besseren Kontrast */
-    font-weight: 700;
-    /* etwas fetter für Präsenz */
-    letter-spacing: 0.5px;
-    /* leichte Luft zwischen den Buchstaben */
+    font-size: 1.8em;
 }
 
-h1 .highlight {
-    color: #0b8d71;
-    /* dunkleres Grün für Kontrast */
-    font-weight: 700;
-    font-style: italic;
-    /* optional, für Stil */
+header .highlight {
+    color: var(--primary);
 }
 
-/* BUTTONS */
-button {
-    padding: 8px 14px;
-    border-radius: 6px;
-    border: none;
-    background-color: #5ca08b;
-    /* dunkleres Pastellgrün */
-    color: #fff;
-    cursor: pointer;
-    font-weight: 600;
-    font-size: 0.9em;
-    transition: background 0.2s;
-}
-
-button:hover:not(:disabled) {
-    background-color: #47816d;
-    /* dunkler beim Hover */
-}
-
-button:disabled {
-    background-color: #a8cfc1;
-    cursor: not-allowed;
-}
-
-/* INPUTS */
-input {
-    padding: 8px 10px;
-    border-radius: 6px;
-    border: 1px solid #ccc;
-    font-size: 0.95em;
-    transition: border 0.2s;
-    background-color: #fefefe;
-}
-
-input:focus {
-    border-color: #5ca08b;
-    outline: none;
-}
-
-/* ADD ITEM */
+/* =========================
+   INPUTY + BUTTONY
+   ========================= */
 .add-item {
     display: flex;
-    gap: 12px;
-    margin-bottom: 20px;
+    gap: 10px;
     flex-wrap: wrap;
+    margin-bottom: 20px;
 }
 
 .add-item input {
     flex: 1;
-    min-width: 180px;
+    padding: 8px;
+    border-radius: 6px;
+    border: 1px solid var(--border);
 }
 
-/* SEARCH BAR */
+button {
+    padding: 8px 12px;
+    border-radius: 6px;
+    border: none;
+    background-color: var(--primary);
+    color: #fff;
+    cursor: pointer;
+    font-weight: 600;
+    transition: background 0.2s;
+}
+
+button:hover:not(:disabled) {
+    background-color: var(--primary-hover);
+}
+
+button:disabled {
+    background-color: var(--card-alt);
+    cursor: not-allowed;
+}
+
+/* =========================
+   SEARCH BAR
+   ========================= */
 .search-bar {
     margin-bottom: 20px;
 }
 
 .search-bar input {
     width: 100%;
-}
-
-/* TODO ITEMS */
-.todo-item {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    padding: 12px 15px;
-    margin-bottom: 12px;
-    border-radius: 8px;
-    background-color: #eaf4f4;
-    /* Pastellblau */
-    transition: transform 0.1s;
-}
-
-.todo-item:hover {
-    transform: translateY(-1px);
-}
-
-.item-left {
-    display: flex;
-    align-items: center;
-    gap: 10px;
-    flex-wrap: wrap;
-}
-
-.item-left p {
-    margin: 0;
-    font-weight: 600;
-    font-size: 1em;
-}
-
-.badge {
-    padding: 3px 7px;
+    padding: 8px;
     border-radius: 6px;
-    font-size: 0.8em;
-    font-weight: 500;
-    color: #fff;
+    border: 1px solid var(--border);
 }
 
-.item-category {
-    font-size: 0.85em;
-    color: #666;
-}
-
-/* BUTTONS RECHTS */
-.item-buttons {
-    display: flex;
-    gap: 6px;
-    flex-shrink: 0;
-}
-
-.item-buttons button {
-    padding: 6px 10px;
-    border-radius: 6px;
-    border: none;
-    background-color: #5ca08b;
-    color: #fff;
-    font-size: 0.85em;
-    cursor: pointer;
-    transition: background 0.2s;
-}
-
-.item-buttons button:hover {
-    background-color: #3d6c58;
-}
-
-/* TABS */
+/* =========================
+   TABS
+   ========================= */
 #tabs {
     display: flex;
     gap: 8px;
-    margin-bottom: 18px;
-    padding: 8px 0;
+    margin-bottom: 15px;
+    flex-wrap: wrap;
 }
 
 #tabs button {
-    padding: 6px 12px;
+    flex: 1;
+    background-color: var(--card-alt);
+    color: var(--text-main);
     border-radius: 6px;
-    border: 1px solid #5ca08b;
-    background-color: #b3dfd1;
-    /* helles Pastellgrün */
-    color: #2f5d50;
     font-weight: 600;
     cursor: pointer;
     transition: all 0.2s;
 }
 
 #tabs button.active {
-    background-color: #3d6c58;
-    /* dunkler für aktive Tabs */
+    background-color: #2b6885;
     color: #fff;
+    transform: scale(1.05);
 }
 
 #tabs button:hover:not(.active) {
-    background-color: #7bb19e;
+    opacity: 0.9;
 }
 
-/* FILTERS */
+/* =========================
+   FILTRY
+   ========================= */
 .filters {
-    margin-top: 20px;
+    display: flex;
+    gap: 8px;
+    margin-bottom: 20px;
 }
 
 .filters button {
-    margin-right: 6px;
+    flex: 1;
+    background-color: var(--card-alt);
+    color: var(--text-main);
 }
 
-/* EXPORT BUTTONS */
-.export-buttons button {
-    margin-right: 6px;
-}
-
-/* DARK MODE */
-body.dark {
-    background-color: var(--background-dark);
-    color: var(--text-main-dark);
-}
-
-body.dark .todo-app-container {
-    background-color: var(--card-dark);
-    border: 1px solid var(--border-dark);
-}
-
-body.dark .todo-item {
-    background-color: var(--card-alt-dark);
-}
-
-body.dark .item-left p {
-    color: var(--text-main-dark);
-}
-
-body.dark .item-category,
-body.dark .item-note-block {
-    color: var(--text-muted-dark);
-}
-
-body.dark input {
-    background-color: #222;
-    color: #e0e0e0;
-    border: 1px solid #555;
-}
-
-body.dark button {
-    background-color: #3f7f6f;
+.filters button.active {
+    background-color: var(--accent);
     color: #fff;
 }
 
-body.dark button:hover:not(:disabled) {
-    background-color: #2f5f52;
+.filters button:hover {
+    opacity: 0.85;
 }
 
-/* PRINT */
-@media print {
-    body * {
-        visibility: hidden;
+/* =========================
+   EXPORT BUTTONY
+   ========================= */
+.export-buttons {
+    display: flex;
+    gap: 10px;
+    margin-bottom: 20px;
+}
+
+.export-buttons button {
+    flex: 1;
+}
+
+/* =========================
+   LISTA ZADAŃ
+   ========================= */
+#items {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+.item-buttons {
+    display: flex;
+    gap: 8px;
+    justify-content: flex-end;
+}
+
+.item-buttons button {
+    width: 32px;
+    height: 32px;
+    border-radius: 8px;
+    background: rgba(255, 255, 255, 0.12);
+    backdrop-filter: blur(6px);
+    border: none;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.2s ease;
+}
+
+.item-buttons button:hover {
+    transform: scale(1.15);
+    background: rgba(255, 255, 255, 0.25);
+}
+
+/* SVG */
+.item-buttons svg {
+    width: 18px;
+    height: 18px;
+    stroke: currentColor;
+    stroke-width: 2;
+    fill: none;
+}
+
+/* COLORS */
+.btn-done {
+    color: #2ecc71;
+}
+
+.btn-edit {
+    color: #3498db;
+}
+
+.btn-delete {
+    color: #e74c3c;
+}
+
+/* HOVER */
+.item-buttons button:hover {
+    transform: scale(1.2);
+}
+
+.todo-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 14px;
+
+    background: linear-gradient(135deg, #004c25, #007348);
+    color: #fff;
+
+    border-radius: 14px;
+    transition: all 0.25s ease;
+
+    box-shadow: 0 6px 18px rgba(0, 0, 0, 0.15);
+    animation: fadeIn 0.3s ease;
+}
+
+.todo-item:hover {
+    box-shadow: 0 0 20px rgba(154, 32, 95, 0.6);
+}
+
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+        transform: translateY(10px);
     }
 
-    #items,
-    #items * {
-        visibility: visible;
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.todo-item:hover {
+    transform: translateY(-4px) scale(1.01);
+    box-shadow: 0 10px 30px rgba(0,0,0,0.3),
+                0 0 10px rgba(255,255,255,0.1);
+}
+
+.item-left {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.item-left p {
+    color: #ffffff;
+    font-weight: 600;
+}
+
+.item-note-preview {
+    color: rgba(255, 255, 255, 0.7);
+}
+
+.item-category {
+    font-size: 0.85em;
+    color: rgba(255,255,255,0.7);
+}
+
+.category-work {
+    background: linear-gradient(135deg, #004c25, #007348);
+}
+
+.category-private {
+    background: linear-gradient(135deg, #bf879d, #9a205f);
+}
+
+.category-important {
+    background: linear-gradient(135deg, #6d0d3a, #9a205f);
+}
+
+/* Kleine Bildschirme */
+@media (max-width: 480px) {
+    .item-buttons {
+        flex-wrap: wrap;
+        /* Buttons umbrechen */
+        gap: 5px;
     }
 
-    #items {
-        position: absolute;
-        top: 0;
-        left: 0;
-        width: 100%;
+    .item-buttons button {
+        flex: 1 1 45%;
+        /* Zwei Buttons pro Zeile */
+        text-align: center;
     }
 }
 
 /* =========================
-   RESPONSIVE
+   BADGE
    ========================= */
+.badge {
+    padding: 4px 8px;
+    border-radius: 999px;
+    font-size: 0.75em;
+    font-weight: 600;
+    color: white;
+    background: rgba(0,0,0,0.2);
+}
 
-/* Tablets */
+/* LIGHT MODE */
+.badge.overdue {
+    background-color: var(--badge-overdue);
+}
+
+.badge.today {
+    background-color: var(--badge-today);
+}
+
+.badge.future {
+    background-color: var(--badge-future);
+}
+
+/* =========================
+   TASK DETAILS
+   ========================= */
+.task-details {
+    margin-top: 10px;
+    padding: 10px;
+    border-radius: 6px;
+    background-color: var(--card);
+}
+
+.task-details textarea {
+    width: 100%;
+    border-radius: 6px;
+    border: 1px solid var(--border);
+    padding: 6px;
+}
+
+/* =========================
+   RESPONSYWNOŚĆ
+   ========================= */
 @media (max-width: 768px) {
-
     .todo-app-container {
         width: 95%;
         padding: 15px;
     }
 
-    header {
-        flex-direction: column;
-        align-items: flex-start;
-        gap: 10px;
-    }
-
-    header h1 {
-        font-size: 1.6em;
-    }
-
     .add-item {
         flex-direction: column;
-        gap: 10px;
     }
 
     .add-item input,
@@ -332,38 +408,12 @@ body.dark button:hover:not(:disabled) {
         width: 100%;
     }
 
-    .todo-item {
-        flex-direction: column;
-        align-items: flex-start;
-        gap: 10px;
-    }
-
-    .item-buttons {
-        width: 100%;
-        justify-content: flex-end;
-    }
-
     #tabs {
         flex-wrap: wrap;
     }
 }
 
-/* Smartphones */
 @media (max-width: 480px) {
-
-    header h1 {
-        font-size: 1.4em;
-    }
-
-    button {
-        font-size: 0.85em;
-        padding: 6px 10px;
-    }
-
-    .todo-item {
-        padding: 10px;
-    }
-
     .item-left p {
         font-size: 0.95em;
     }
@@ -375,7 +425,6 @@ body.dark button:hover:not(:disabled) {
 
     .item-buttons button {
         flex: 1;
-        /* Buttons gleich breit */
     }
 
     #tabs button {
@@ -384,38 +433,67 @@ body.dark button:hover:not(:disabled) {
     }
 }
 
-.task-details {
-    margin-top: 10px;
-    padding: 10px;
-    background: #f3f9f8;
-    border-radius: 6px;
+/* =========================
+   DARK MODE
+   ========================= */
+body.dark {
+    background: #292727;
+    color: var(--text-main-dark);
 }
 
-.task-details textarea {
-    width: 100%;
-    border-radius: 6px;
-    border: 1px solid #ccc;
-    padding: 6px;
-    margin-bottom: 6px;
-    font-family: inherit;
+body.dark .todo-app-container {
+    background-color: var(--card-dark);
 }
 
-.item-note-preview {
-    display: block;
+body.dark .todo-item {
+    background: linear-gradient(135deg, #6d0d3a, #9a205f);
+    color: #fff;
+}
+
+body.dark .task-details {
+    background: rgba(255,255,255,0.05);
+    backdrop-filter: blur(8px);
+}
+
+body.dark .item-category {
     font-size: 0.85em;
-    color: #555;
-    margin-top: 2px;
-    overflow: hidden;
-    white-space: nowrap;
-    text-overflow: ellipsis;
-    max-width: 200px;
-    /* oder 60% der Card-Breite */
+    color: #c3e7df;
 }
 
-.item-note-block {
-    font-size: 0.85em;
-    color: #555;
-    margin: 5px 0 0 0;
-    padding: 15px;
-    word-break: break-word;
+body.dark input,
+body.dark textarea {
+    background-color: #2a2a2a;
+    color: var(--text-main-dark);
+    border: 1px solid #857c7c;
+}
+
+/* DARK MODE */
+body.dark .item-left p {
+    color: var(--text-main-dark);
+}
+
+/* Name */
+body.dark .item-left .item-note-preview {
+    color: var(--text-muted-dark);
+}
+
+/* Notiz */
+body.dark .badge.overdue {
+    background-color: var(--badge-overdue-dark);
+    color: #fff;
+}
+
+body.dark .badge.today {
+    background-color: var(--badge-today-dark);
+    color: #fff;
+}
+
+body.dark .badge.future {
+    background-color: var(--badge-future-dark);
+    color: #fff;
+}
+
+body.dark .badge {
+    color: #dfdbdb;
+    /* jaśniejszy tekst w dark mode */
 }
